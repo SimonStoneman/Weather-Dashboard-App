@@ -67,8 +67,47 @@ function getWeatherData() {
 
         $.get(forecastWeather + `lat=${lat}&lon=${lon}&appid=${myApiKey}` + weatherUnits)
             .then(function (forecastData) {
-                console.log (forecastData);
-                
+                // console.log (forecastData);
+                var forecastArr = forecastData.list
+
+                // var testText = 'bob';
+              
+                for (var forecast of forecastArr){
+                //     // console.log(forecast);
+                //     // console.log(forecast.dt_txt);
+
+                    var forecastDnT = '';
+                    
+                    forecastDnT = forecast.dt_txt;
+
+                    if (forecastDnT.match('12:00:00')) {
+                        console.log(forecast);
+                        // console.log(forecast.weather);
+
+                        var weatherImgArr = [];
+                        weatherImgArr = forecast.weather;
+
+                        // console.log(weatherImgArr[0].icon);
+
+                        console.log(`
+                        Date & Time: ${forecast.dt_txt}
+                        Forecast Img:  ${weatherImgArr[0].icon}
+                        Temp: ${forecast.main.temp}
+                        Wind Speed: ${forecast.wind.speed}
+                        Humidity: ${forecast.main.humidity}
+                        `);
+
+                    };
+                };
+
+               /* 
+                output for each card
+                date and forcast time
+                forecast img
+                temp
+                win
+                humidity
+                */
             });
     });
 
