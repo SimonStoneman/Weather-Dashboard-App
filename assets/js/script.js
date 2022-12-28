@@ -7,11 +7,16 @@
 
 var myApiKey = 'f05af73148e926c7dab18966a3e1b58e';
 var baseWeatherUrl = 'https://api.openweathermap.org/data/2.5/';
+var openWeatherIconUrl = ' http://openweathermap.org/img/wn/';
 var currentWeather = baseWeatherUrl + `weather?`;
 var forecastWeather = baseWeatherUrl + `forecast?`;
 var weatherUnits = '&units=metric'
 //var city = 'London';
 var city = '';
+var todaysWeatherSection = $('#today');
+var forecastWeatherSection = $('#forecast');
+var todaycnt = 0;
+var forecastcnt = 0;
 
 function storeCitysSearched(arr){
     localStorage.setItem('citysearches', JSON.stringify(arr))
@@ -23,9 +28,46 @@ function retrieveCitysSearched(){
     return JSON.parse(localStorage.getItem('citysearches')) || [];
 };
 
-function displayCurrentWeather(){};
+function displayWeather(type, weather){
 
-function displayForecastWeather(){};
+    
+    
+
+    if (!weather) {
+        noMatch();
+    } else {
+            if (type == 'today') {
+                todaysWeatherSection.html('');
+
+                todaysWeatherSection.append(`
+                    <div class="weather-card">
+                        <h3>${weather[0]}</h3>
+                        <p>${weather[1]}</p>
+                        <p>${weather[2]}</p>
+                        <p>${weather[3]}</p>
+                        <img src="${weather[4]}" alt="Current Weather Symbol">
+                    </div>
+                `) 
+            } else {
+                    if (forecastcnt < 1) {
+                        forecastWeatherSection.html('');
+                    }
+
+                    forecastcnt++;
+
+                    forecastWeatherSection.append(`
+                            <div class="weather-card">
+                                <h3>${weather[0]}</h3>
+                                <p>${weather[1]}</p>
+                                <p>${weather[2]}</p>
+                                <p>${weather[3]}</p>
+                                <img src="${weather[4]}" alt="Current Weather Symbol">
+                            </div>
+                    `);
+            
+            };
+    };
+};
 
 function addCitySearched () {
     var getcitys = retrieveCitysSearched();
@@ -52,18 +94,51 @@ function addCitySearched () {
 
 function getWeatherData() {
 
+    var timeDate = '';
+    var temp = '';
+    var windS = ''
+    var humidity = '';
+    var weathImg = '';
+    outputArr = [];
+
     $.get(currentWeather + `q=${city}&appid=${myApiKey}` + weatherUnits)
         .then(function(data) {
             console.log(data);
             var lon = data.coord.lon;
             var lat = data.coord.lat;
+            outputArr = [];
 
-            console.log(`
-            -----Curent Conditions---------
-            Temp: ${data.main.temp} Deg C
-            Wind: ${data.main.speed} M/s
-            Humidity: ${data.main.humidity} %
-            `);
+            // Read out of items to add to current weather display area
+            // console.log(`
+            // -----Curent Conditions---------
+            // Temp: ${data.main.temp} Deg C
+            // Wind Speed: ${data.main.speed} M/s
+            // Humidity: ${data.main.humidity} %
+            // `);
+
+            // outputArr.push `${data.main.temp} Deg C`;
+            // outputArr.push `${data.wind.speed} M/s`;
+            // outputArr.push `${data.main.humidity} %`;
+            timeDate = 'Current'
+            temp = `Temp: ${data.main.temp} °C`;
+            windS = `Wind Speed: ${data.wind.speed} m/s`;
+            humidity = `Humidity: ${data.main.humidity} %`;
+            weathImg = `${openWeatherIconUrl}${data.weather[0].icon}@4x.png`
+
+            outputArr.push(`${timeDate}`);
+            outputArr.push(`${temp}`);
+            outputArr.push(`${windS}`);
+            outputArr.push(`${humidity}`);
+            outputArr.push(`${weathImg}`);
+
+            // console.log(`Todays Weather Data: ${outputArr}`)
+
+            // for (var item of outputArr) {
+            //     console.log (item);
+            // // }
+            displayWeather('today', outputArr);
+
+
 
         $.get(forecastWeather + `lat=${lat}&lon=${lon}&appid=${myApiKey}` + weatherUnits)
             .then(function (forecastData) {
@@ -81,7 +156,7 @@ function getWeatherData() {
                     forecastDnT = forecast.dt_txt;
 
                     if (forecastDnT.match('12:00:00')) {
-                        console.log(forecast);
+                        // console.log(forecast);
                         // console.log(forecast.weather);
 
                         var weatherImgArr = [];
@@ -89,14 +164,38 @@ function getWeatherData() {
 
                         // console.log(weatherImgArr[0].icon);
 
-                        console.log(`
-                        Date & Time: ${forecast.dt_txt}
-                        Forecast Img:  ${weatherImgArr[0].icon}
-                        Temp: ${forecast.main.temp}
-                        Wind Speed: ${forecast.wind.speed}
-                        Humidity: ${forecast.main.humidity}
-                        `);
+                        // Read out of items to add to forecast weather display area
+                        // console.log(`
+                        // Date & Time: ${forecast.dt_txt}
+                        // Forecast Img:  ${weatherImgArr[0].icon}
+                        // Temp: ${forecast.main.temp}
+                        // Wind Speed: ${forecast.wind.speed}
+                        // Humidity: ${forecast.main.humidity}
+                        // `);
 
+                        //erase array content
+                        outputArr = [];
+
+                        timeDate = `${forecast.dt_txt}`;
+                        temp = `Temp: ${forecast.main.temp} °C`;
+                        windS = `Wind Speed: ${forecast.wind.speed} m/s`;
+                        humidity = `Humidity: ${forecast.main.humidity} %`;
+                        weathImg = `${openWeatherIconUrl}${forecast.weather[0].icon}@2x.png`
+
+                        // outputArr.push(`${forecast.dt_txt}`);
+                        // outputArr.push(`${forecast.main.temp}`);
+                        // outputArr.push(`${forecast.wind.speed}`);
+                        // outputArr.push(`${forecast.main.humidity}`);
+                        // outputArr.push(`${openWeatherIconUrl}${weatherImgArr[0].icon}@2x.png`);
+
+                        outputArr.push(`${timeDate}`);
+                        outputArr.push(`${temp}`);
+                        outputArr.push(`${windS}`);
+                        outputArr.push(`${humidity}`);
+                        outputArr.push(`${weathImg}`);
+
+                        // console.log (`Forecast Weather Data: ${outputArr}`);
+                        displayWeather('forecast', outputArr);
                     };
                 };
 
