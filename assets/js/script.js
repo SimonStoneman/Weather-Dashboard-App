@@ -73,10 +73,10 @@ function displayWeather(type, weather){
     };
 };
 
-function displayCitiesSearched() {
+function displayCitiesSearched(search) {
 
     searchList.append(`
-        <li>Blah<button>Remove</button></li>
+        <li>${search}<button>Remove</button></li>
     `); 
 };
 
@@ -94,13 +94,15 @@ function addCitySearched() {
     //is the 'indexOf' array method to check the entire array data of getcitys, to see if users search is unique
     if (currentCitiesSearched.indexOf(searchTxt) === -1) {
         //as nothing is found the index returned as -1 so is a unique value
-        console.log(`Add new item ${searchTxt} to temp citysearched array`)
+        console.log(`Add new item ${searchTxt} to temp citysearched array`);
         currentCitiesSearched.push(searchTxt);
-        console.log('Add new city list to the local storage')
+        console.log('Add new city list to the local storage');
         storeCitysSearched(currentCitiesSearched);
-        console.log('check out new items after local storage update')
+        console.log('check out new items after local storage update');
         getcitys = retrieveCitysSearched();
-        console.log(`localstore has: ${getcitys}`)
+        console.log(`localstore has: ${getcitys}`);
+
+        displayCitiesSearched(searchTxt);
     } else {
         console.log(`This item (${searchTxt}) already exists`);
         alert(`This item (${searchTxt}) already exists in search history`);
@@ -231,3 +233,21 @@ function init () {
 };
 
 $('#search-button').click(init);
+
+$('ul li').click(function(){
+    var selection = $(this);
+    var cityFromHistList = selection[0].firstChild.data;
+
+    // console.log(selection);
+    // console.log(cityFromHistList);
+    city = cityFromHistList;
+    getWeatherData();
+});
+
+// pending event to use remove button to clear search history item from hml list and localstorage
+
+// $('ul li button').click(function(){
+//     var selection = $(this);
+
+//     console.log(selection);
+// });
