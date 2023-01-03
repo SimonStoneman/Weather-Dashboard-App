@@ -60,21 +60,56 @@ list-style-type: none;
     grid-template-rows: 1fr 2fr;
 }
 
-#today{
+#today {
     display: grid;
     grid-template-rows: 50px auto;
 }
 
 #today h2 {
     padding-top: 5px;
+    padding-bottom: 5px;
     padding-left: 5px;
-   }
+}
+
+.todays-weather-card {
+    background-image: linear-gradient(to right,rgba(74, 78, 105,0.2),rgba(74, 78, 105,1));
+    padding-left: 5px;
+    display:grid;
+    grid-template-columns: 200px auto;
+    /* grid-template-rows: 25px 25px 25px 25px auto; */
+    grid-template-rows: repeat(4, 25px) auto;
+}
+
+#todays-1 {
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+    margin: auto 0;
+}
+
+#todays-2 {
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+    margin: auto 0;
+}
+
+#todays-3 {
+    grid-column: 1 / 2;
+    grid-row: 3 / 4;
+    margin: auto 0;
+}
+
+#todays-img {
+    grid-column: 2 / 3;
+    grid-row: 1 / 6;   
+    justify-self: center;
+    align-self: center;
+}
 
 #forecast {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     grid-template-rows: 50px auto;
-    gap: 0px 15px;
+    gap: 0px 5px;
     border-top: 1px solid black;
 }
 
@@ -82,4 +117,16 @@ list-style-type: none;
     grid-column: 1/6;
     padding-top: 5px;
     padding-left: 5px;
+}
+
+.forcast-weather-card {
+    background-image: linear-gradient(to right,rgba(74, 78, 105,0.2),rgba(74, 78, 105,1));
+    padding-left: 5px;
+    display:grid;
+    grid-template-rows: 25px 25px 25px 25px auto;
+}
+
+#forecast-img {
+    justify-self: center;
+    align-self: center;
 }

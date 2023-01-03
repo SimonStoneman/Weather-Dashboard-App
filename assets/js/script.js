@@ -15,6 +15,7 @@ var weatherUnits = '&units=metric'
 var city = '';
 var todaysWeatherSection = $('#today');
 var forecastWeatherSection = $('#forecast');
+var searchList = $('div ul')
 var todaycnt = 0;
 var forecastcnt = 0;
 
@@ -30,38 +31,41 @@ function retrieveCitysSearched(){
 
 function displayWeather(type, weather){
 
-    
-    
-
     if (!weather) {
         noMatch();
     } else {
             if (type == 'today') {
-                todaysWeatherSection.html('');
+                // todaysWeatherSection.html('');
+                todaysWeatherSection.empty();
+                
 
                 todaysWeatherSection.append(`
-                    <div class="weather-card">
-                        <h3>${weather[0]}</h3>
-                        <p>${weather[1]}</p>
-                        <p>${weather[2]}</p>
-                        <p>${weather[3]}</p>
-                        <img src="${weather[4]}" alt="Current Weather Symbol">
+                    <h2>Todays Weather</h2>
+                    <div class="todays-weather-card">
+                        <p id="todays-1">${weather[0]}</p>
+                        <p id="todays-2">${weather[1]}</p>
+                        <p id="todays-3">${weather[2]}</p>
+                        <img src="${weather[3]}" alt="Current Weather Symbol" id="todays-img">
                     </div>
                 `) 
             } else {
                     if (forecastcnt < 1) {
-                        forecastWeatherSection.html('');
+                        // forecastWeatherSection.html('');
+                        forecastWeatherSection.empty();
+                        forecastWeatherSection.append(`
+                            <h2>5 Day Forecast</h2>
+                        `);
                     }
 
                     forecastcnt++;
 
                     forecastWeatherSection.append(`
-                            <div class="weather-card">
+                            <div class="forcast-weather-card">
                                 <h3>${weather[0]}</h3>
                                 <p>${weather[1]}</p>
                                 <p>${weather[2]}</p>
                                 <p>${weather[3]}</p>
-                                <img src="${weather[4]}" alt="Current Weather Symbol">
+                                <img src="${weather[4]}" alt="Current Weather Symbol" id="forecast-img"'>
                             </div>
                     `);
             
@@ -69,25 +73,38 @@ function displayWeather(type, weather){
     };
 };
 
-function addCitySearched () {
+function displayCitiesSearched() {
+
+    searchList.append(`
+        <li>Blah<button>Remove</button></li>
+    `); 
+};
+
+function addCitySearched() {
     var getcitys = retrieveCitysSearched();
     var searchTxt = city;
 
-    //get citys search data
-    // var currentCitiesSearched = getcitys.push(searchTxt);
+    // get citys search data
+    var currentCitiesSearched = getcitys;
     
-    console.log(`localstorage contains: ${getcitys}`)
+    console.log(`localstorage contains: ${currentCitiesSearched}`)
 
     console.log('hitting for loop');
 
     //is the 'indexOf' array method to check the entire array data of getcitys, to see if users search is unique
-    if (getcitys.indexOf(searchTxt) === -1) {
+    if (currentCitiesSearched.indexOf(searchTxt) === -1) {
         //as nothing is found the index returned as -1 so is a unique value
-
-        currentCitiesSearched.push(searchTxt)
-        storeCitysSearched(getcitys);
+        console.log(`Add new item ${searchTxt} to temp citysearched array`)
+        currentCitiesSearched.push(searchTxt);
+        console.log('Add new city list to the local storage')
+        storeCitysSearched(currentCitiesSearched);
+        console.log('check out new items after local storage update')
+        getcitys = retrieveCitysSearched();
+        console.log(`localstore has: ${getcitys}`)
     } else {
         console.log(`This item (${searchTxt}) already exists`);
+        alert(`This item (${searchTxt}) already exists in search history`);
+        return;
     }; 
 
 };
@@ -100,6 +117,8 @@ function getWeatherData() {
     var humidity = '';
     var weathImg = '';
     outputArr = [];
+
+    addCitySearched();
 
     $.get(currentWeather + `q=${city}&appid=${myApiKey}` + weatherUnits)
         .then(function(data) {
@@ -119,13 +138,11 @@ function getWeatherData() {
             // outputArr.push `${data.main.temp} Deg C`;
             // outputArr.push `${data.wind.speed} M/s`;
             // outputArr.push `${data.main.humidity} %`;
-            timeDate = 'Current'
             temp = `Temp: ${data.main.temp} °C`;
             windS = `Wind Speed: ${data.wind.speed} m/s`;
             humidity = `Humidity: ${data.main.humidity} %`;
             weathImg = `${openWeatherIconUrl}${data.weather[0].icon}@4x.png`
 
-            outputArr.push(`${timeDate}`);
             outputArr.push(`${temp}`);
             outputArr.push(`${windS}`);
             outputArr.push(`${humidity}`);
@@ -199,26 +216,18 @@ function getWeatherData() {
                     };
                 };
 
-               /* 
-                output for each card
-                date and forcast time
-                forecast img
-                temp
-                win
-                humidity
-                */
+                // Reset forecast call count used in displayWeather func to run a clear and add title on first iter of 5 day data
+                forecastcnt = 0;
             });
     });
-
-    addCitySearched();
 }
 
 function init () {
     city = $('#search-input').val();
 
-    console.log('in iit func');
-    console.log(`city is: ${city}`);
-    getWeatherData ();
+    // console.log('in iit func');
+    // console.log(`city is: ${city}`);
+    getWeatherData();
 };
 
 $('#search-button').click(init);
