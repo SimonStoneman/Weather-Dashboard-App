@@ -35,17 +35,6 @@ header h1 {
     grid-template-columns: 1fr 4fr;
 }
 
-#left-side form {
-    padding: 15px 5px;
-}
-
-#left-side ul li {
-display: flex;
-justify-content: space-between;
-padding: 0px 5px;
-list-style-type: none;
-}   
-
 #left-side {
     border-right: 5px solid black;
     /* background-color: blue; */
@@ -53,6 +42,29 @@ list-style-type: none;
 
 #left-side h2 {
     padding: 5px 5px; 
+}
+
+#left-side form {
+    padding: 15px 5px;
+}
+
+#left-side form .input-group-append {
+    padding-top: 10px;
+}
+
+#left-side ul {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    padding: 0px 5px;
+    row-gap: 5px;
+}
+
+#left-side ul li {
+    grid-column: 1/2;
+}   
+
+#left-side ul button {
+    grid-column: 2/3;
 }
 
 #right-side {
