@@ -52,18 +52,18 @@ header h1 {
     padding-top: 10px;
 }
 
-#left-side ul {
+#left-side ul li {
     display: grid;
     grid-template-columns: 2fr 1fr;
     padding: 0px 5px;
     row-gap: 5px;
-}
-
-#left-side ul li {
-    grid-column: 1/2;
 }   
 
-#left-side ul button {
+#left-side li p {
+    grid-column: 1/2;
+}
+
+#left-side li button {
     grid-column: 2/3;
 }
 

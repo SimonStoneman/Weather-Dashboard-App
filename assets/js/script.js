@@ -11,11 +11,9 @@ var openWeatherIconUrl = ' http://openweathermap.org/img/wn/';
 var currentWeather = baseWeatherUrl + `weather?`;
 var forecastWeather = baseWeatherUrl + `forecast?`;
 var weatherUnits = '&units=metric'
-//var city = 'London';
-var city = '';
 var todaysWeatherSection = $('#today');
 var forecastWeatherSection = $('#forecast');
-var searchList = $('div ul')
+var searchList = $('#history ul')
 var todaycnt = 0;
 var forecastcnt = 0;
 
@@ -29,18 +27,18 @@ function retrieveCitysSearched(){
     return JSON.parse(localStorage.getItem('citysearches')) || [];
 };
 
-function displayWeather(type, weather){
+function displayWeather(type, weather, city){
 
     if (!weather) {
         noMatch();
     } else {
             if (type == 'today') {
-                // todaysWeatherSection.html('');
+    
                 todaysWeatherSection.empty();
                 
 
                 todaysWeatherSection.append(`
-                    <h2>Todays Weather</h2>
+                    <h2>Todays Weather (${city})</h2>
                     <div class="todays-weather-card">
                         <p id="todays-1">${weather[0]}</p>
                         <p id="todays-2">${weather[1]}</p>
@@ -50,10 +48,10 @@ function displayWeather(type, weather){
                 `) 
             } else {
                     if (forecastcnt < 1) {
-                        // forecastWeatherSection.html('');
+                      
                         forecastWeatherSection.empty();
                         forecastWeatherSection.append(`
-                            <h2>5 Day Forecast</h2>
+                            <h2>5 Day Forecast (${city})</h2>
                         `);
                     }
 
@@ -73,14 +71,28 @@ function displayWeather(type, weather){
     };
 };
 
+// Add the search entry to the html search history list
 function displayCitiesSearched(search) {
 
+    console.log('in displayCitiesSearched');
+
     searchList.append(`
-        <li>${search}</li><button>Remove</button>
+        <li>
+            <p>${search}</p>
+            <button>Remove</button>
+        </li>
     `); 
 };
 
-function addCitySearched() {
+// Delete the user selected city from the html search history list
+function deleteCitiesSearched(item) {
+
+    item.parent().remove();
+    item.remove();
+};
+
+// Add city search by the user to localstorage array
+function addCitySearched(city) {
     var getcitys = retrieveCitysSearched();
     var searchTxt = city;
 
@@ -111,7 +123,28 @@ function addCitySearched() {
 
 };
 
-function getWeatherData() {
+// Removes the user selected city from the localstorage array 
+function removeCitySearched(item) {
+    var getCitySearchHist = retrieveCitysSearched();
+    var cityToRm = item;
+
+    // Using the filter array method to affectively create a new array with the filter critera removed.
+    // In this case I wish to remove the city that the use selected to remove from the localstorage array
+    var newCitySearchHist = getCitySearchHist.filter(function(arrItem) {
+            return arrItem != cityToRm;
+        });
+
+    // console.log(newCitySearchHist);
+
+    // console.log('Add new city list to the local storage');
+    storeCitysSearched(newCitySearchHist);
+    // console.log('check out new items after local storage update');
+    getCitySearchHist = retrieveCitysSearched();
+    // console.log(`localstore has: ${getCitySearchHist}`);
+
+};
+
+function getWeatherData(city) {
 
     var timeDate = '';
     var temp = '';
@@ -120,11 +153,9 @@ function getWeatherData() {
     var weathImg = '';
     outputArr = [];
 
-    addCitySearched();
-
     $.get(currentWeather + `q=${city}&appid=${myApiKey}` + weatherUnits)
         .then(function(data) {
-            // console.log(data);
+            console.log(data);
             var lon = data.coord.lon;
             var lat = data.coord.lat;
             outputArr = [];
@@ -155,7 +186,7 @@ function getWeatherData() {
             // for (var item of outputArr) {
             //     console.log (item);
             // // }
-            displayWeather('today', outputArr);
+            displayWeather('today', outputArr, city);
 
 
 
@@ -214,7 +245,7 @@ function getWeatherData() {
                         outputArr.push(`${weathImg}`);
 
                         // console.log (`Forecast Weather Data: ${outputArr}`);
-                        displayWeather('forecast', outputArr);
+                        displayWeather('forecast', outputArr, city);
                     };
                 };
 
@@ -225,11 +256,12 @@ function getWeatherData() {
 }
 
 function init () {
-    city = $('#search-input').val();
+    var city = $('#search-input').val();
 
     // console.log('in iit func');
     // console.log(`city is: ${city}`);
-    getWeatherData();
+    getWeatherData(city);
+    addCitySearched(city);
 };
 
 $(document).on('keydown', 'form', function(event) {
@@ -239,28 +271,33 @@ $(document).on('keydown', 'form', function(event) {
 $('#search-button').click(init);
 
 // on click of selected dynamic 'li' created under the static 'ul' do some actions
-$('ul').on("click", "li", function(){
+$('ul').on("click", "p", function(){
     var selection = $(this);
+    var selectionCityName = selection[0].innerText;
 
     // console.log(selection.text());
 
-    if($(selection).text().trim() === 'Remove'){
-        var textSelcted = selection[0].firstChild.data;
-        console.log(`User selected ${textSelcted}`)
-    }
+    // if($(selection).text().trim() === 'Remove'){
+    //     var textSelcted = selection[0].firstChild.data;
+    //     console.log(`User selected ${textSelcted}`)
+    // }
          
     // var cityFromHistList = selection[0].firstChild.data;
 
-    console.log(selection);
-    // console.log(cityFromHistList);
-    // city = cityFromHistList;
-    // getWeatherData();
+    getWeatherData(selectionCityName);
 });
 
 // pending event to use remove button to clear search history item from hml list and localstorage
 
-// $('ul li button').click(function(){
-//     var selection = $(this);
+$('ul').on('click', 'button', function(){
+    var selection = $(this);
 
-//     console.log(selection);
-// });
+    // console.log(selection);
+    // console.log(selection.parentElement);
+    var selectionTxt = selection.parent()[0].firstElementChild.innerText;
+
+    deleteCitiesSearched(selection);
+    
+    removeCitySearched(selectionTxt);
+
+});
