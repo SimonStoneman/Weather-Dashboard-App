@@ -1,9 +1,4 @@
-// Find long and Lat of searched City
-
-// https://api.openweathermap.org/data/2.5/weather?q={city name}&appid={API key}
-
-//Pass in Long & Lat + Personal weatherapi apikey
-// https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={API key}
+// ----GLOBAL VARIABLE SECTION START----
 
 var myApiKey = 'f05af73148e926c7dab18966a3e1b58e';
 var baseWeatherUrl = 'https://api.openweathermap.org/data/2.5/';
@@ -16,6 +11,10 @@ var forecastWeatherSection = $('#forecast');
 var searchList = $('#history ul')
 var todaycnt = 0;
 var forecastcnt = 0;
+
+// ----GLOBAL VARIABLE SECTION END----
+
+// ----FUNCTION SECTION START----
 
 function storeCitysSearched(arr){
     localStorage.setItem('citysearches', JSON.stringify(arr))
@@ -34,9 +33,10 @@ function displayWeather(type, weather, city){
     } else {
             if (type == 'today') {
     
+                // Clears the child elements of the 'today' html section 
                 todaysWeatherSection.empty();
                 
-
+                // Appends the following html to the 'today' html section 
                 todaysWeatherSection.append(`
                     <h2>Todays Weather (${city})</h2>
                     <div class="todays-weather-card">
@@ -47,16 +47,20 @@ function displayWeather(type, weather, city){
                     </div>
                 `) 
             } else {
+                    // on the first call clear the forecast section of child elements and add the title
                     if (forecastcnt < 1) {
-                      
+                        // Clears the child elements of the 'forecast' html section 
                         forecastWeatherSection.empty();
+                        // Appends the following html to the 'forecast' html section 
                         forecastWeatherSection.append(`
                             <h2>5 Day Forecast (${city})</h2>
                         `);
                     }
 
+                    // increase the counter by one so the following section is called
                     forecastcnt++;
 
+                    // Appends the following html to the 'forecast' html section 
                     forecastWeatherSection.append(`
                             <div class="forcast-weather-card">
                                 <h3>${weather[0]}</h3>
@@ -98,7 +102,7 @@ function addCitySearched(city) {
 
     // get citys search data
     var currentCitiesSearched = getcitys;
-    
+
     // console.log(`localstorage contains: ${currentCitiesSearched}`)
 
     // console.log('hitting for loop');
@@ -144,6 +148,8 @@ function removeCitySearched(item) {
 
 };
 
+// Calls inital api using the user input data (city name) to find longitude & latitude, 
+// which are then used in the second api call to retrieve the forcast data for current day and the next 5 days
 function getWeatherData(city) {
 
     var timeDate = '';
@@ -151,31 +157,25 @@ function getWeatherData(city) {
     var windS = ''
     var humidity = '';
     var weathImg = '';
-    outputArr = [];
+    var outputArr = [];
 
+    // Call openweather api using city name provided by user to get lon & lat
     $.get(currentWeather + `q=${city}&appid=${myApiKey}` + weatherUnits)
         .then(function(data) {
-            console.log(data);
+            
+            // Set longitude and latitude data from api for the city name passed to short usable names
             var lon = data.coord.lon;
             var lat = data.coord.lat;
-            outputArr = [];
 
-            // Read out of items to add to current weather display area
-            // console.log(`
-            // -----Curent Conditions---------
-            // Temp: ${data.main.temp} Deg C
-            // Wind Speed: ${data.main.speed} M/s
-            // Humidity: ${data.main.humidity} %
-            // `);
+            // console.log(data);
 
-            // outputArr.push `${data.main.temp} Deg C`;
-            // outputArr.push `${data.wind.speed} M/s`;
-            // outputArr.push `${data.main.humidity} %`;
+            // Setup readable and simple var names for data retrieved from api
             temp = `Temp: ${data.main.temp} °C`;
             windS = `Wind Speed: ${data.wind.speed} m/s`;
             humidity = `Humidity: ${data.main.humidity} %`;
             weathImg = `${openWeatherIconUrl}${data.weather[0].icon}@4x.png`
 
+            // Push above items in to an array (first to last) to hand over to displayWeather func
             outputArr.push(`${temp}`);
             outputArr.push(`${windS}`);
             outputArr.push(`${humidity}`);
@@ -183,20 +183,22 @@ function getWeatherData(city) {
 
             // console.log(`Todays Weather Data: ${outputArr}`)
 
-            // for (var item of outputArr) {
-            //     console.log (item);
-            // // }
+            // Call displayWeather func to write the info to the 'todays' section (1st arg) of the page using data in outputArr and providing the city name for header details
             displayWeather('today', outputArr, city);
 
 
-
+        // Using long and lat from prev api call, get forcast data
         $.get(forecastWeather + `lat=${lat}&lon=${lon}&appid=${myApiKey}` + weatherUnits)
             .then(function (forecastData) {
+
                 // console.log (forecastData);
+
                 var forecastArr = forecastData.list
 
-                // var testText = 'bob';
+                // Clear the commonly used outputArr for this func (getWeatherData) on the second call
+                outputArr = [];
               
+                // Cycle through the forcast data list to obtain only noon data outputs
                 for (var forecast of forecastArr){
                 //     // console.log(forecast);
                 //     // console.log(forecast.dt_txt);
@@ -205,39 +207,26 @@ function getWeatherData(city) {
                     
                     forecastDnT = forecast.dt_txt;
 
+                    // if the forecast.dt_txt is for noon then process the data 
                     if (forecastDnT.match('12:00:00')) {
+
                         // console.log(forecast);
                         // console.log(forecast.weather);
 
                         var weatherImgArr = [];
                         weatherImgArr = forecast.weather;
 
-                        // console.log(weatherImgArr[0].icon);
-
-                        // Read out of items to add to forecast weather display area
-                        // console.log(`
-                        // Date & Time: ${forecast.dt_txt}
-                        // Forecast Img:  ${weatherImgArr[0].icon}
-                        // Temp: ${forecast.main.temp}
-                        // Wind Speed: ${forecast.wind.speed}
-                        // Humidity: ${forecast.main.humidity}
-                        // `);
-
                         //erase array content
                         outputArr = [];
 
+                        // Setup readable and simple var names for data retrieved from api
                         timeDate = `${forecast.dt_txt}`;
                         temp = `Temp: ${forecast.main.temp} °C`;
                         windS = `Wind Speed: ${forecast.wind.speed} m/s`;
                         humidity = `Humidity: ${forecast.main.humidity} %`;
                         weathImg = `${openWeatherIconUrl}${forecast.weather[0].icon}@2x.png`
 
-                        // outputArr.push(`${forecast.dt_txt}`);
-                        // outputArr.push(`${forecast.main.temp}`);
-                        // outputArr.push(`${forecast.wind.speed}`);
-                        // outputArr.push(`${forecast.main.humidity}`);
-                        // outputArr.push(`${openWeatherIconUrl}${weatherImgArr[0].icon}@2x.png`);
-
+                        // Push above items in to an array (first to last) to hand over to displayWeather func
                         outputArr.push(`${timeDate}`);
                         outputArr.push(`${temp}`);
                         outputArr.push(`${windS}`);
@@ -245,6 +234,8 @@ function getWeatherData(city) {
                         outputArr.push(`${weathImg}`);
 
                         // console.log (`Forecast Weather Data: ${outputArr}`);
+
+                        // Call displayWeather func to write the info to the 'forecast' section (1st arg) of the page using data in outputArr and providing the city name for header details
                         displayWeather('forecast', outputArr, city);
                     };
                 };
@@ -255,49 +246,54 @@ function getWeatherData(city) {
     });
 }
 
+// Initilsation function
 function init () {
     var city = $('#search-input').val();
 
     // console.log('in iit func');
     // console.log(`city is: ${city}`);
+
     getWeatherData(city);
     addCitySearched(city);
 };
 
+// ----FUNCTION SECTION END----
+
+// ----EVENT HANDLER SECTION START----
+
+// prevents the page refreshing if user hits enter  by not returning it to event handler i.e. preventDefault
 $(document).on('keydown', 'form', function(event) {
     return event.key !='Enter';
 });
 
+// when search button is click initiate the init function
 $('#search-button').click(init);
 
-// on click of selected dynamic 'li' created under the static 'ul' do some actions
+// on click of selected dynamic 'p' created under the static 'ul', get the weather forecast info
 $('ul').on("click", "p", function(){
     var selection = $(this);
     var selectionCityName = selection[0].innerText;
 
-    // console.log(selection.text());
-
-    // if($(selection).text().trim() === 'Remove'){
-    //     var textSelcted = selection[0].firstChild.data;
-    //     console.log(`User selected ${textSelcted}`)
-    // }
-         
-    // var cityFromHistList = selection[0].firstChild.data;
-
+    // Get weather data again
     getWeatherData(selectionCityName);
 });
 
-// pending event to use remove button to clear search history item from hml list and localstorage
+// on click of select dynamic remove button, clear search history item from hml list and localstorage
 
 $('ul').on('click', 'button', function(){
     var selection = $(this);
 
     // console.log(selection);
     // console.log(selection.parentElement);
+
     var selectionTxt = selection.parent()[0].firstElementChild.innerText;
 
+    // Delete selected search history item from html
     deleteCitiesSearched(selection);
     
+    // Delete selected search history item from localstorage
     removeCitySearched(selectionTxt);
 
 });
+
+// ----EVENT HANDLER SECTION END----
