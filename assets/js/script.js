@@ -78,7 +78,7 @@ function displayWeather(type, weather, city){
 // Add the search entry to the html search history list
 function displayCitiesSearched(search) {
 
-    console.log('in displayCitiesSearched');
+    // console.log('in displayCitiesSearched');
 
     searchList.append(`
         <li>
@@ -98,7 +98,7 @@ function deleteCitiesSearched(item) {
 // Add city search by the user to localstorage array
 function addCitySearched(city) {
     var getcitys = retrieveCitysSearched();
-    var searchTxt = city;
+    var searchTxt = city.toUpperCase();
 
     // get citys search data
     var currentCitiesSearched = getcitys;
@@ -130,7 +130,7 @@ function addCitySearched(city) {
 // Removes the user selected city from the localstorage array 
 function removeCitySearched(item) {
     var getCitySearchHist = retrieveCitysSearched();
-    var cityToRm = item;
+    var cityToRm = item.toUpperCase();
 
     // Using the filter array method to affectively create a new array with the filter critera removed.
     // In this case I wish to remove the city that the use selected to remove from the localstorage array
@@ -158,11 +158,15 @@ function getWeatherData(city) {
     var humidity = '';
     var weathImg = '';
     var outputArr = [];
+    var respCode = '';
+    var respStatus = '';
+    var combindUrl = currentWeather + `q=${city}&appid=${myApiKey}` + weatherUnits;
+    
 
     // Call openweather api using city name provided by user to get lon & lat
-    $.get(currentWeather + `q=${city}&appid=${myApiKey}` + weatherUnits)
-        .then(function(data) {
-            
+    $.get(combindUrl)
+        .then(function(data, status) {
+    
             // Set longitude and latitude data from api for the city name passed to short usable names
             var lon = data.coord.lon;
             var lat = data.coord.lat;
@@ -186,64 +190,94 @@ function getWeatherData(city) {
             // Call displayWeather func to write the info to the 'todays' section (1st arg) of the page using data in outputArr and providing the city name for header details
             displayWeather('today', outputArr, city);
 
+                // Reset combindUrl to new one
+                combindUrl = forecastWeather + `lat=${lat}&lon=${lon}&appid=${myApiKey}` + weatherUnits;
 
-        // Using long and lat from prev api call, get forcast data
-        $.get(forecastWeather + `lat=${lat}&lon=${lon}&appid=${myApiKey}` + weatherUnits)
-            .then(function (forecastData) {
+                // Using long and lat from prev api call, get forcast data
+                $.get(combindUrl)
+                    .then(function (forecastData) {
 
-                // console.log (forecastData);
+                        // console.log (forecastData);
 
-                var forecastArr = forecastData.list
+                        var forecastArr = forecastData.list
 
-                // Clear the commonly used outputArr for this func (getWeatherData) on the second call
-                outputArr = [];
-              
-                // Cycle through the forcast data list to obtain only noon data outputs
-                for (var forecast of forecastArr){
-                //     // console.log(forecast);
-                //     // console.log(forecast.dt_txt);
-
-                    var forecastDnT = '';
-                    
-                    forecastDnT = forecast.dt_txt;
-
-                    // if the forecast.dt_txt is for noon then process the data 
-                    if (forecastDnT.match('12:00:00')) {
-
-                        // console.log(forecast);
-                        // console.log(forecast.weather);
-
-                        var weatherImgArr = [];
-                        weatherImgArr = forecast.weather;
-
-                        //erase array content
+                        // Clear the commonly used outputArr for this func (getWeatherData) on the second call
                         outputArr = [];
+                    
+                        // Cycle through the forcast data list to obtain only noon data outputs
+                        for (var forecast of forecastArr){
+                        //     // console.log(forecast);
+                        //     // console.log(forecast.dt_txt);
 
-                        // Setup readable and simple var names for data retrieved from api
-                        timeDate = `${forecast.dt_txt}`;
-                        temp = `Temp: ${forecast.main.temp} °C`;
-                        windS = `Wind Speed: ${forecast.wind.speed} m/s`;
-                        humidity = `Humidity: ${forecast.main.humidity} %`;
-                        weathImg = `${openWeatherIconUrl}${forecast.weather[0].icon}@2x.png`
+                            var forecastDnT = '';
+                            
+                            forecastDnT = forecast.dt_txt;
 
-                        // Push above items in to an array (first to last) to hand over to displayWeather func
-                        outputArr.push(`${timeDate}`);
-                        outputArr.push(`${temp}`);
-                        outputArr.push(`${windS}`);
-                        outputArr.push(`${humidity}`);
-                        outputArr.push(`${weathImg}`);
+                            // if the forecast.dt_txt is for noon then process the data 
+                            if (forecastDnT.match('12:00:00')) {
 
-                        // console.log (`Forecast Weather Data: ${outputArr}`);
+                                // console.log(forecast);
+                                // console.log(forecast.weather);
 
-                        // Call displayWeather func to write the info to the 'forecast' section (1st arg) of the page using data in outputArr and providing the city name for header details
-                        displayWeather('forecast', outputArr, city);
-                    };
-                };
+                                var weatherImgArr = [];
+                                weatherImgArr = forecast.weather;
 
-                // Reset forecast call count used in displayWeather func to run a clear and add title on first iter of 5 day data
-                forecastcnt = 0;
-            });
-    });
+                                //erase array content
+                                outputArr = [];
+
+                                // Setup readable and simple var names for data retrieved from api
+                                timeDate = `${forecast.dt_txt}`;
+                                temp = `Temp: ${forecast.main.temp} °C`;
+                                windS = `Wind Speed: ${forecast.wind.speed} m/s`;
+                                humidity = `Humidity: ${forecast.main.humidity} %`;
+                                weathImg = `${openWeatherIconUrl}${forecast.weather[0].icon}@2x.png`
+
+                                // Push above items in to an array (first to last) to hand over to displayWeather func
+                                outputArr.push(`${timeDate}`);
+                                outputArr.push(`${temp}`);
+                                outputArr.push(`${windS}`);
+                                outputArr.push(`${humidity}`);
+                                outputArr.push(`${weathImg}`);
+
+                                // console.log (`Forecast Weather Data: ${outputArr}`);
+
+                                // Call displayWeather func to write the info to the 'forecast' section (1st arg) of the page using data in outputArr and providing the city name for header details
+                                displayWeather('forecast', outputArr, city);
+                            };
+                        };
+
+                        // Reset forecast call count used in displayWeather func to run a clear and add title on first iter of 5 day data
+                        forecastcnt = 0;
+
+                        return 0;
+
+                    // Catch any error from the API get call    
+                    }).catch ( err => {
+                        respCode = err.responseJSON.cod;
+                        respStatus = err.responseJSON.message;
+
+                        alert('there was an error in API call for the Forecast : ' + respCode + ' - ' + respStatus); 
+
+                        // Return false status to prevent any further action
+                        return false;
+                    });
+
+            // Return true status to if ok
+            return true;
+
+        // Catch any error from the API get call
+        }).catch (err => {
+            respCode = err.responseJSON.cod;
+            respStatus = err.responseJSON.message;
+
+            alert('there was an error in API call for the Current Weather: ' + respCode + ' - ' + respStatus);
+
+            // Return false status to prevent any further action
+            return false;
+        });
+
+    // Return true status to if ok
+    return true;
 }
 
 // Initilsation function
@@ -253,8 +287,12 @@ function init () {
     // console.log('in iit func');
     // console.log(`city is: ${city}`);
 
-    getWeatherData(city);
-    addCitySearched(city);
+    // if call to getWeatherData func is good run the addCitySearched func
+    if (getWeatherData(city)) {
+        // console.log('getWeatherData ok so running addCitySearched')
+        addCitySearched(city);
+    }
+    
 };
 
 // ----FUNCTION SECTION END----
